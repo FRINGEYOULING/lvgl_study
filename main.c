@@ -91,8 +91,7 @@ int main(int argc, char **argv)
 //  lv_example_tabview_1();
 //  lv_example_flex_3();
 //  lv_example_label_1();
-    lv_all_init();
-    my_ui();
+    Start_up();
 //    lv_demo_widgets();
 //    lv_demo_music();
 

@@ -15,6 +15,8 @@ LV_IMG_DECLARE(Start);
 LV_IMG_DECLARE(Stop);
 LV_IMG_DECLARE(Menu);
 LV_IMG_DECLARE(Locat);
+LV_IMG_DECLARE(gyro);
+LV_IMG_DECLARE(System);
 int a = 0;
 unsigned char cut = 0;
 bool Switch_on_off = false;
@@ -26,9 +28,11 @@ lv_obj_t *switch1;
 lv_obj_t *lable;
 lv_obj_t *Wlan;
 lv_obj_t *phone;
+lv_obj_t *start;
 lv_obj_t *start_img;
 lv_obj_t *menu_img;
 lv_obj_t *loca_img;
+lv_obj_t *sys_img;
 lv_obj_t *start_btn;
 lv_obj_t *menu_btn;
 lv_obj_t *loca_btn;
@@ -37,7 +41,7 @@ lv_anim_t ani_foce;
 lv_anim_t ani_btn1;
 lv_anim_t ani_btn2;
 lv_anim_t ani_btn3;
-
+lv_obj_t *gyro_img;
 //菜单切换动画
 lv_anim_t menu_ani;
 lv_anim_t old_menu_ani;
@@ -53,6 +57,14 @@ static void anim_end_cb(lv_anim_t * anim)
 {
     /* 动画结束时执行的操作 */
     lv_obj_del(del);
+}
+
+static void start_end_cb(lv_anim_t * anim)
+{
+    /* 动画结束时执行的操作 */
+    lv_obj_del(start);
+    my_ui();
+    Menu_load(home_bg,NULL,LV_SCR_LOAD_ANIM_MOVE_TOP,750,50);
 }
 
 void display_chane(lv_obj_t * obj);
@@ -184,8 +196,9 @@ void Menu_load(lv_obj_t *obj,lv_obj_t *old_obj,lv_scr_load_anim_t anim_type,uint
     lv_anim_set_time(&menu_ani,time);
     lv_anim_set_delay(&menu_ani,delay);
     lv_anim_set_path_cb(&menu_ani,lv_anim_path_ease_out);
-    lv_anim_set_ready_cb(&menu_ani,anim_end_cb);
-    del = old_obj;
+    if(old_obj!=NULL)
+        lv_anim_set_ready_cb(&menu_ani,anim_end_cb);
+        del = old_obj;
     lv_anim_start(&menu_ani);
 }
 
@@ -302,13 +315,6 @@ void my_ui()
     lv_obj_set_pos(phone,20,0);
 
 
-
-
-//    lv_obj_set_align(switch1,LV_ALIGN_CENTER);
-//    lv_obj_t *switch2 = lv_switch_create(switch1);//子对象超出父对象范围不显示
-//    lv_obj_set_size(switch2,10,2);
-//    lv_obj_set_pos(switch2,50,60);
-
 }
 
 void menu_ob()
@@ -323,12 +329,64 @@ void menu_ob()
     lv_obj_set_size(menu_fo,100,100);
     lv_obj_set_style_bg_color(menu_fo,lv_color_hex(0xFFFFFF),LV_STATE_DEFAULT);
     lv_obj_align(menu_fo,LV_ALIGN_CENTER,0,0);
+    gyro_img = lv_img_create(menu_bg);
+    sys_img = lv_img_create(menu_bg);
+    lv_img_set_src(sys_img,&System);
+    lv_obj_align(sys_img,LV_ALIGN_TOP_MID,0,70 );
+    lv_img_set_src(gyro_img,&gyro);
+    lv_obj_set_align(gyro_img,LV_ALIGN_TOP_MID);
 
     menu_btn = lv_btn_create(menu_fo);
     lv_obj_set_size(menu_btn,25,25);
     lv_obj_set_align(menu_btn,LV_ALIGN_CENTER);
     lv_obj_set_style_bg_color(menu_btn,lv_color_hex(0x363636),LV_STATE_DEFAULT);
     lv_obj_add_event_cb(menu_btn,my_event,LV_EVENT_CLICKED,NULL);
+
+}
+
+void Start_up()
+{
+    lv_all_init();
+    lv_anim_t start_up;
+    lv_anim_t start_up_lable;
+    lv_anim_init(&start_up);
+    lv_anim_init(&start_up_lable);
+    start = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(start,240,240);
+    lv_obj_set_style_bg_color(start,lv_color_hex(0x000000),LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(start,0,LV_STATE_DEFAULT);
+
+    lv_obj_t* cont = lv_obj_create(start);
+    lv_obj_remove_style_all(cont);
+    lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_size(cont, 110, 50);
+    lv_obj_set_style_border_color(cont, lv_color_hex(0xff931e), 0);
+    lv_obj_set_style_border_side(cont, LV_BORDER_SIDE_BOTTOM, 0);
+    lv_obj_set_style_border_width(cont, 3, 0);
+    lv_obj_set_style_border_post(cont, true, 0);
+    lv_obj_center(cont);
+    lv_anim_set_var(&start_up,cont);
+    lv_anim_set_exec_cb(&start_up,(lv_anim_exec_xcb_t) lv_obj_set_width);
+    lv_anim_set_time(&start_up,2000);
+    lv_anim_set_values(&start_up,0,110);
+    lv_anim_set_delay(&start_up,800);
+    lv_anim_set_ready_cb(&start_up,start_end_cb);
+    lv_anim_set_path_cb(&start_up,lv_anim_path_bounce);
+    lv_anim_start(&start_up);
+
+    lv_obj_t* label = lv_label_create(start);
+    lv_obj_set_style_text_font(label, &lv_font_montserrat_22, 0);
+    lv_obj_set_style_text_color(label, lv_color_white(), 0);
+    lv_label_set_text(label, "L_track");
+    lv_obj_center(label);
+    lv_anim_set_var(&start_up_lable,label);
+    lv_anim_set_exec_cb(&start_up_lable,(lv_anim_exec_xcb_t) lv_obj_set_height);
+    lv_anim_set_time(&start_up_lable,600);
+    lv_anim_set_values(&start_up_lable,0,25);
+    lv_anim_set_delay(&start_up_lable,400);
+    lv_anim_set_path_cb(&start_up_lable,lv_anim_path_ease_out);
+
+    lv_anim_start(&start_up_lable);
 }
 
 void display_chane(lv_obj_t * obj)
