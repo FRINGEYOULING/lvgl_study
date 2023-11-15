@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 
-file(GLOB_RECURSE INCLUDES "lv_drivers/*.h" "lv_demos/*.h"  "lvgl/*.h"  "./*.h" "myui/*.h")
-file(GLOB_RECURSE SOURCES  "lv_drivers/*.c" "lv_demos/*.c"  "lvgl/*.c" "TEST/generated/images/*.c" "myui/*.c")
+file(GLOB_RECURSE INCLUDES "lv_drivers/*.h" "lv_demos/*.h"  "lvgl/*.h"  "./*.h" "myui/*.h" "H_tarck/*.h")
+file(GLOB_RECURSE SOURCES  "lv_drivers/*.c" "lv_demos/*.c"  "lvgl/*.c" "TEST/generated/images/*.c" "myui/*.c" "H_tarck/*.cpp" "TEST/generated/*.c")
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 SET(CMAKE_CXX_FLAGS "-O3")
@@ -19,6 +19,14 @@ add_executable(main main.c mouse_cursor_icon.c ${SOURCES} ${INCLUDES}
         myui/myui.h
         myui/OIP.c
         TEST/generated/images/Start.c
+        myui/animotion.c
+        myui/animotion.h
+        H_tarck/Start_up.cpp
+        H_tarck/Start_up.h
+        H_tarck/Diplat.cpp
+        H_tarck/Diplat.h
+        H_tarck/SysIfo.cpp
+        H_tarck/SysIfo.h
 )
 add_compile_definitions(LV_CONF_INCLUDE_SIMPLE)
 target_link_libraries(main PRIVATE SDL2 )

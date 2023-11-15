@@ -17,7 +17,10 @@
 #include "lvgl/demos/lv_demos.h"
 #include "lv_drivers/sdl/sdl.h"
 #include "myui/myui.h"
+#include "H_tarck/Start_up.h"
+#include "H_tarck/Diplat.h"
 #include "string.h"
+#include "H_tarck/SysIfo.h"
 /*********************
  *      DEFINES
  *********************/
@@ -58,7 +61,7 @@ static void hal_init(void);
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-
+lv_group_t *group;
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
@@ -91,7 +94,9 @@ int main(int argc, char **argv)
 //  lv_example_tabview_1();
 //  lv_example_flex_3();
 //  lv_example_label_1();
-    Start_up();
+//    yuanshen_qidong();
+    yuanshen_qd();
+//    Create(lv_scr_act());
 //    lv_demo_widgets();
 //    lv_demo_music();
 
@@ -135,7 +140,12 @@ static void hal_init(void)
 
   lv_theme_t * th = lv_theme_default_init(disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK, LV_FONT_DEFAULT);
   lv_disp_set_theme(disp, th);
-
+lv_obj_t* scr = lv_scr_act();//设置活动屏幕的颜色
+lv_obj_remove_style_all(scr);
+lv_obj_set_style_bg_opa(lv_scr_act(), LV_OPA_COVER, 0);
+lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), 0);
+lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
+lv_disp_set_bg_color(lv_disp_get_default(), lv_color_black());
   lv_group_t * g = lv_group_create();
   lv_group_set_default(g);
 
@@ -156,16 +166,19 @@ static void hal_init(void)
   lv_indev_t *kb_indev = lv_indev_drv_register(&indev_drv_2);
   lv_indev_set_group(kb_indev, g);
 
+  group= lv_group_create();
   static lv_indev_drv_t indev_drv_3;
   lv_indev_drv_init(&indev_drv_3); /*Basic initialization*/
   indev_drv_3.type = LV_INDEV_TYPE_ENCODER;
   indev_drv_3.read_cb = sdl_mousewheel_read;
   lv_indev_t * enc_indev = lv_indev_drv_register(&indev_drv_3);
   lv_indev_set_group(enc_indev, g);
+  lv_indev_set_group(enc_indev, group);
+  lv_group_set_default(group);
 
-  /*Set a cursor for the mouse*/
-  LV_IMG_DECLARE(mouse_cursor_icon); /*Declare the image file.*/
-  lv_obj_t * cursor_obj = lv_img_create(lv_scr_act()); /*Create an image object for the cursor */
-  lv_img_set_src(cursor_obj, &mouse_cursor_icon);           /*Set the image source*/
-  lv_indev_set_cursor(mouse_indev, cursor_obj);             /*Connect the image  object to the driver*/
+//  /*Set a cursor for the mouse*/
+//  LV_IMG_DECLARE(mouse_cursor_icon); /*Declare the image file.*/
+//  lv_obj_t * cursor_obj = lv_img_create(lv_scr_act()); /*Create an image object for the cursor */
+//  lv_img_set_src(cursor_obj, &mouse_cursor_icon);           /*Set the image source*/
+//  lv_indev_set_cursor(mouse_indev, cursor_obj);             /*Connect the image  object to the driver*/
 }

@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include "time.h"
 #include "myui.h"
-LV_FONT_DECLARE(lv_font_chinese);
 LV_IMG_DECLARE(wifi);
 LV_IMG_DECLARE(_tel_alpha_10x10);
 LV_IMG_DECLARE(Start);
@@ -17,10 +16,12 @@ LV_IMG_DECLARE(Menu);
 LV_IMG_DECLARE(Locat);
 LV_IMG_DECLARE(gyro);
 LV_IMG_DECLARE(System);
+LV_IMG_DECLARE(yuanshen);
 int a = 0;
 unsigned char cut = 0;
 bool Switch_on_off = false;
 bool Switch = false;
+extern lv_group_t *group;
 lv_obj_t *home_bg;
 lv_obj_t *foce_bg;
 lv_obj_t *slider;
@@ -29,10 +30,12 @@ lv_obj_t *lable;
 lv_obj_t *Wlan;
 lv_obj_t *phone;
 lv_obj_t *start;
+lv_obj_t *ys;
 lv_obj_t *start_img;
 lv_obj_t *menu_img;
 lv_obj_t *loca_img;
 lv_obj_t *sys_img;
+lv_obj_t *yuan_img;
 lv_obj_t *start_btn;
 lv_obj_t *menu_btn;
 lv_obj_t *loca_btn;
@@ -48,11 +51,22 @@ lv_anim_t old_menu_ani;
 //菜单页面
 lv_obj_t *menu_bg;
 lv_obj_t *menu_fo;
+lv_obj_t *gyro_OBJ;
+lv_obj_t *sys_OBJ;
 //菜单按键
 lv_obj_t *menu_btn;
 
 lv_timer_t *task;
 lv_obj_t  *del;
+
+static void yuanshen_end_cb(lv_anim_t * anim)
+{
+    /* 动画结束时执行的操作 */
+    lv_obj_del(ys);
+    Start_up();
+    Menu_load(start,NULL,LV_SCR_LOAD_ANIM_MOVE_TOP,750,50);
+}
+
 static void anim_end_cb(lv_anim_t * anim)
 {
     /* 动画结束时执行的操作 */
@@ -126,9 +140,34 @@ static void my_event(lv_event_t *e)
             Time_reset(500,-1);
         }
     }
+    if(unit==gyro_OBJ)
+    {
+        if(code == LV_EVENT_FOCUSED)
+        {
+            lv_obj_set_style_border_width(sys_OBJ,0,LV_STATE_DEFAULT);
+            lv_obj_set_style_border_width(gyro_OBJ,2,LV_STATE_DEFAULT);
+        }
+    }
+    if(unit==sys_OBJ)
+    {
+        if(code == LV_EVENT_FOCUSED)
+        {
+            lv_obj_set_style_border_width(gyro_OBJ,0,LV_STATE_DEFAULT);
+            lv_obj_set_style_border_width(sys_OBJ,2,LV_STATE_DEFAULT);
+        }
+    }
 
 
 }
+
+void onFocus(lv_group_t* g)
+{
+    lv_obj_t* icon = lv_group_get_focused(g);
+    lv_obj_t* cont = lv_obj_get_parent(icon);
+    lv_coord_t y = lv_obj_get_y(cont);
+    lv_obj_scroll_to_y(lv_obj_get_parent(cont), y, LV_ANIM_ON);
+}
+
 
 void Time_reset(uint32_t period,int32_t repeat_count)
 {
@@ -313,7 +352,9 @@ void my_ui()
     phone = lv_img_create(foce_bg);
     lv_img_set_src(phone,&_tel_alpha_10x10);
     lv_obj_set_pos(phone,20,0);
-
+    lv_group_add_obj(group,start_btn);
+    lv_group_add_obj(group,menu_btn);
+    lv_group_add_obj(group,loca_btn);
 
 }
 
@@ -325,28 +366,46 @@ void menu_ob()
     lv_obj_set_style_bg_color(menu_bg,lv_color_hex(0x000000),LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(menu_bg,0,LV_STATE_DEFAULT);
     
-    menu_fo = lv_obj_create(menu_bg);
-    lv_obj_set_size(menu_fo,100,100);
-    lv_obj_set_style_bg_color(menu_fo,lv_color_hex(0xFFFFFF),LV_STATE_DEFAULT);
-    lv_obj_align(menu_fo,LV_ALIGN_CENTER,0,0);
-    gyro_img = lv_img_create(menu_bg);
-    sys_img = lv_img_create(menu_bg);
-    lv_img_set_src(sys_img,&System);
-    lv_obj_align(sys_img,LV_ALIGN_TOP_MID,0,70 );
+    gyro_OBJ = lv_obj_create(menu_bg);
+    lv_obj_set_size(gyro_OBJ,60,60);
+    lv_obj_set_style_bg_color(gyro_OBJ,lv_color_hex(0x000000),LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(gyro_OBJ,0,LV_STATE_DEFAULT);
+    lv_obj_align(gyro_OBJ,LV_ALIGN_TOP_MID,0,0);
+    gyro_img = lv_img_create(gyro_OBJ);
     lv_img_set_src(gyro_img,&gyro);
-    lv_obj_set_align(gyro_img,LV_ALIGN_TOP_MID);
+    lv_obj_set_align(gyro_img,LV_ALIGN_CENTER);
+    lv_obj_set_scrollbar_mode(gyro_OBJ,LV_SCROLLBAR_MODE_OFF );
 
-    menu_btn = lv_btn_create(menu_fo);
+    sys_OBJ = lv_obj_create(menu_bg);
+    lv_obj_set_size(sys_OBJ,60,60);
+    lv_obj_set_style_bg_color(sys_OBJ,lv_color_hex(0x000000),LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(sys_OBJ,0,LV_STATE_DEFAULT);
+    lv_obj_align(sys_OBJ,LV_ALIGN_TOP_MID,0,70);
+    sys_img = lv_img_create(sys_OBJ);
+    lv_img_set_src(sys_img,&System);
+    lv_obj_align(sys_img,LV_ALIGN_CENTER,0,0 );
+    lv_obj_set_scrollbar_mode(sys_OBJ,LV_SCROLLBAR_MODE_OFF );
+
+    menu_btn = lv_btn_create(menu_bg);
     lv_obj_set_size(menu_btn,25,25);
-    lv_obj_set_align(menu_btn,LV_ALIGN_CENTER);
+    lv_obj_align(menu_btn,LV_ALIGN_CENTER,0,70);
     lv_obj_set_style_bg_color(menu_btn,lv_color_hex(0x363636),LV_STATE_DEFAULT);
     lv_obj_add_event_cb(menu_btn,my_event,LV_EVENT_CLICKED,NULL);
+    lv_group_t* group1 = lv_group_get_default();
+    lv_group_set_wrap(group1, true);
+    lv_group_set_focus_cb(group1, onFocus);
 
+    lv_group_add_obj(group1,gyro_OBJ);
+    lv_group_add_obj(group1,sys_OBJ);
+
+    lv_group_focus_obj(gyro_OBJ);
+
+//    lv_obj_add_event_cb(gyro_OBJ,my_event,LV_EVENT_FOCUSED,NULL);
+//    lv_obj_add_event_cb(sys_OBJ,my_event,LV_EVENT_FOCUSED,NULL);
 }
 
 void Start_up()
 {
-    lv_all_init();
     lv_anim_t start_up;
     lv_anim_t start_up_lable;
     lv_anim_init(&start_up);
@@ -369,7 +428,7 @@ void Start_up()
     lv_anim_set_exec_cb(&start_up,(lv_anim_exec_xcb_t) lv_obj_set_width);
     lv_anim_set_time(&start_up,2000);
     lv_anim_set_values(&start_up,0,110);
-    lv_anim_set_delay(&start_up,800);
+    lv_anim_set_delay(&start_up,400);
     lv_anim_set_ready_cb(&start_up,start_end_cb);
     lv_anim_set_path_cb(&start_up,lv_anim_path_bounce);
     lv_anim_start(&start_up);
@@ -377,16 +436,44 @@ void Start_up()
     lv_obj_t* label = lv_label_create(start);
     lv_obj_set_style_text_font(label, &lv_font_montserrat_22, 0);
     lv_obj_set_style_text_color(label, lv_color_white(), 0);
-    lv_label_set_text(label, "L_track");
+    lv_label_set_text(label, "MIHOYO");
     lv_obj_center(label);
     lv_anim_set_var(&start_up_lable,label);
     lv_anim_set_exec_cb(&start_up_lable,(lv_anim_exec_xcb_t) lv_obj_set_height);
     lv_anim_set_time(&start_up_lable,600);
     lv_anim_set_values(&start_up_lable,0,25);
-    lv_anim_set_delay(&start_up_lable,400);
+    lv_anim_set_delay(&start_up_lable,800);
     lv_anim_set_path_cb(&start_up_lable,lv_anim_path_ease_out);
 
     lv_anim_start(&start_up_lable);
+}
+
+void yuanshen_qidong()
+{
+    lv_all_init();
+    lv_anim_t ys_ani;
+    lv_anim_init(&ys_ani);
+    ys = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(ys,240,240);
+    lv_obj_set_style_bg_color(ys,lv_color_hex(0xFFFFFF),LV_STATE_DEFAULT);
+
+    lv_obj_t *yuan = lv_obj_create(ys);
+    lv_obj_set_size(yuan,150,100);
+    lv_obj_center(yuan);
+    lv_obj_set_style_border_width(yuan,0,LV_STATE_DEFAULT);
+    yuan_img = lv_img_create(yuan);
+    lv_img_set_src(yuan_img,&yuanshen);
+    lv_obj_center(yuan_img);
+    lv_anim_set_var(&ys_ani,yuan);
+    lv_anim_set_exec_cb(&ys_ani,(lv_anim_exec_xcb_t) lv_obj_set_height);
+    lv_obj_set_scrollbar_mode(yuan,LV_SCROLLBAR_MODE_OFF );
+    lv_anim_set_time(&ys_ani,4000);
+    lv_anim_set_values(&ys_ani,0,150);
+    lv_anim_set_delay(&ys_ani,1000);
+    lv_anim_set_ready_cb(&ys_ani,start_end_cb);
+    lv_anim_set_path_cb(&ys_ani,lv_anim_path_ease_out);
+    lv_anim_set_ready_cb(&ys_ani,yuanshen_end_cb);
+    lv_anim_start(&ys_ani);
 }
 
 void display_chane(lv_obj_t * obj)
